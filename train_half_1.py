@@ -33,7 +33,7 @@ class GLDTrain(Dataset):
         try:
             image = io.imread(img_path)
             image = Image.fromarray(image)
-            y_label = torch.tensor(int(test_data.iloc[index, 1]))
+            y_label = torch.tensor(int(test_data.iloc[index, 1]) - 1)
 
             if self.transform:
                 image = self.transform(image)
@@ -60,7 +60,7 @@ class GLDTest(Dataset):
 
         image = io.imread(img_path)
         image = Image.fromarray(image)
-        y_label = torch.tensor(int(test_data.iloc[index, 1]))
+        y_label = torch.tensor(int(test_data.iloc[index, 1]) - 1)
         # print(img_path)
 
         if self.transform:
