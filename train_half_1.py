@@ -110,7 +110,10 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1
 writer = SummaryWriter(comment=model.__class__.__name__)
 
 timestr = time.strftime("%Y%m%d-%H%M%S")
-MODEL_PATH = os.path.join('models', model.__class__.__name__, timestr)
+### checkpoint path
+dir_name = model.__class__.__name__ + time.strftime('-%Y%m%d-%H%M%S', time.localtime(time.time()))
+checkpoint_path = os.path.join('checkpoints', dir_name)
+
 
 def train(model, train_loader, criterion, optimizer, epoch):
     model.train()
@@ -155,8 +158,7 @@ def evaluate(model, test_loader):
 
     test_loss /= len(test_loader.dataset)
     test_accuracy = 100. * correct / len(test_loader.dataset)
-    writer.add_scalar('test_loss', test_loss)
-    writer.add_scalar('test_accruacy', test_accuracy)
+    return test_loss, test_accuracy
 
 for epoch in range(EPOCHS):
     print("====> EPOCH:", epoch)
@@ -164,7 +166,16 @@ for epoch in range(EPOCHS):
 
     lr_scheduler.step()
 
-    if epoch % 10 == 0:
-         evaluate(model, test_loader)
+    # if epoch % 1 == 0:
+    test_loss, test_accuracy = evaluate(model, test_loader)
+    writer.add_scalar('test_loss', test_loss)
+    writer.add_scalar('test_accruacy', test_accuracy)
+    if not os.path.exists(checkpoint_path):
+        print('creating dir {}'.format(checkpoint_path))
+        os.mkdir(checkpoint_path)
 
-torch.save(model, MODEL_PATH)
+    print('==> Saving checkpoint... epoch {}'.format(epoch))
+    checkpoint_file_path = os.path.join(checkpoint_path, 'e-{}.pkl'.format(1))
+    torch.save(model, checkpoint_file_path)
+
+writer.close()
